@@ -1,9 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Login from "../components/Login";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from 'react-hot-toast'
 
 export default function SignUp() {
+  const location =useLocation();
+  const navigate=useNavigate();
+  const from=location.state?.from?.pathname|| "/";
   const {
     register,
     handleSubmit,
@@ -11,7 +16,29 @@ export default function SignUp() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = async (data) => {
+    const userInfo = {
+      fullname: data.fullname,
+      email: data.email,
+      password: data.password,
+    };
+    await axios
+      .post("http://localhost:4001/user/signup", userInfo)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data) {
+          toast.success('Signup Succesfully');
+          navigate(from,{replace:true});
+        }
+        localStorage.setItem("Users",JSON.stringify(res.data.user));
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error);
+          toast.error("Error" + error.response.data.message);
+        }
+      });
+  };
 
   console.log(watch("example")); // watch input value by passing the name of it
 
